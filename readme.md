@@ -21,3 +21,5 @@ will attempt to switch to the configuration with the key ```main```.
 
 To print a list of profiles stored in ```data/current_profiles.txt```, if the corresponding file was in ```/etc/tlp.d/```, run:
     ```print_active_profiles```
+
+4. To exit from program press ```Cntrl + c``` or enter -1.
