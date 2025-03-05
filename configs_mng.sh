@@ -185,9 +185,9 @@ is_profile_active() {
         return 1
     fi
     
-    local target="$target_path/${current_profiles[$1]}"
+    local target="$target_path/${current_profiles["$1"]}"
     if [ ! -f "$target" ]; then
-        echo "No such config in tlp.d/ with key: '$1' target: '$target'"
+        #echo "No such config in tlp.d/ with key: '$1' target: '$target'"
         return 1
     fi
 
@@ -195,9 +195,29 @@ is_profile_active() {
         return 1
     fi
     
-    #if ! cmp -s "$target" ""
+    local source_config="${profiles_map["$1"]}/${current_profiles["$1"]}"
+    if ! cmp -s "$target" "$source_config"; then
+        #echo "Configs not equals. Source: '$source_config'"
+        return 1
+    fi
     
     return 0
 }
-is_profile_active "mai"
-echo "Is active: $?"
+
+print_active_profile_with_key() { 
+    if ! is_profile_active "$1"; then
+        return
+    fi
+    
+    local source_config="${profiles_map["$1"]}/${current_profiles["$1"]}"
+    printf "key: '%s' config: '%s'\n" "$1" "$source_config"
+}
+
+print_all_active_profiles() { 
+    echo "---- Active configs ----"
+    for key in "${!current_profiles[@]}"; do
+        print_active_profile_with_key "$key"
+    done
+    echo "----                ----"
+}
+print_all_active_profiles
