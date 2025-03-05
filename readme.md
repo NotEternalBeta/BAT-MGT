@@ -23,3 +23,7 @@ To print a list of profiles stored in ```data/current_profiles.txt```, if the co
     ```print_active_profiles```
 
 4. To exit from program press ```Cntrl + c``` or enter -1.
+
+TLP actual configurations located in ```/etc/tlp.d/``` and ```/etc/tlp.conf```.
+
+You can check current TLP parameters: ```tlp-stats -c```.
