@@ -101,55 +101,6 @@ print_indexes() {
 }
 print_indexes
 
-key_main="main"
-key_charge_threshold="charge_threshold"
-
-
-
-# return index profile from current data, otherwise -1
-get_current_profile_index() {
-    local index=-1
-    local key
-    local current_profile
-    local profiles_path
-    case "$1" in
-        "main")
-            key="$key_main"
-            profiles_path="$main_profiles_path"
-        ;;
-        "charge_threshold")
-            key="$key_charge_threshold"
-            profiles_path="$charge_threshold_profiles_path"
-        ;;
-
-        *)
-            echo "Provided key was incorrect"
-            return
-        ;;
-    esac
-    
-    local current_from_data="$(grep "^$key=" "$data_file" | cut -d'=' -f2)"
-    if [ -n "$current_from_data" ]; then
-        echo "empty"
-    fi
-
-    if [ -f "$profiles_path/$current_from_data" ]; then
-        for profile in "$profiles_path"/*.conf; do
-            index=$((index + 1))
-            #echo "$profile"
-            local profile_short="$(basename "$profile")"
-            #echo "$profile_short"
-            if [ "$profile_short" == "$current_from_data" ]; then
-                #echo "eq"
-                break
-            fi
-        done
-    fi
-
-    echo "$index"
-}
-#echo $(get_current_profile_index)
-
 is_current_profile() {
     if [[ -z "$1" ]]; then
         echo "The key was not provided"
@@ -221,3 +172,57 @@ print_all_active_profiles() {
     echo "----                ----"
 }
 print_all_active_profiles
+
+force_set_current_profiles() { 
+    sudo rm "$target_path"/*
+    
+    for key in "${!current_profiles[@]}"; do     
+        local source="${profiles_map["$key"]}/${current_profiles["$key"]}"
+        sudo cp "$source" "$target_path/${current_profiles["$key"]}"
+    done
+}
+#force_set_current_profiles
+
+restart_tlp() {
+    sudo tlp start
+}
+
+cycle_profile_with_key() {
+    # TO DO: read all data again
+    
+    if ! has_configs_with_key "$1"; then
+        return
+    fi
+
+    local index=$((${profiles_indexes["$1"]}+1))
+    local count=$(find "${profiles_map["$1"]}" -maxdepth 1 -type f -name "*.conf" | wc -l)
+    if [ "$index" -eq "$count" ]; then
+        index=0
+    fi
+    
+    local i=0
+    for file in "${profiles_map["$1"]}"/*.conf; do
+        if [ "$index" -eq "$i" ]; then
+            local profile_name="$(basename "$file")"
+            sudo cp "$file" "$target_path/$profile_name"
+            
+            if is_profile_active "$1"; then
+                sudo rm "$target_path/${current_profiles["$1"]}"
+            fi
+            
+            local key="$1"
+            local new_value="$profile_name"
+            sed -i "s/^$key=[^ ]*/$key=$new_value/" "$current_profiles_data"
+            
+            profiles_indexes["$1"]=$index
+            break
+        fi
+        
+        i=$((i+1))
+    done
+}
+#cycle_profile_with_key "main"
+
+if [[ -n "$1" ]]; then
+    "$@"
+fi
