@@ -1,6 +1,7 @@
 #!/bin/bash
 
 program_path="$(dirname "$(realpath "$0")")"
+target_path="/etc/tlp.d"
 #echo "'$program_path'"
 data_path="$program_path/data"
 current_profiles_data="$data_path/current_profiles.txt"
@@ -103,6 +104,8 @@ print_indexes
 key_main="main"
 key_charge_threshold="charge_threshold"
 
+
+
 # return index profile from current data, otherwise -1
 get_current_profile_index() {
     local index=-1
@@ -145,4 +148,56 @@ get_current_profile_index() {
 
     echo "$index"
 }
-echo $(get_current_profile_index)
+#echo $(get_current_profile_index)
+
+is_current_profile() {
+    if [[ -z "$1" ]]; then
+        echo "The key was not provided"
+        return 1
+    fi
+    if [[ ! -v current_profiles[$1] || -z ${current_profiles[$1]} ]]; then
+        echo "Provided key '$1' was incorrect."
+        return 1
+    fi
+    return 0
+}
+
+has_configs_with_key() { 
+    if [[ -z "$1" ]]; then
+        echo "The key was not provided"
+        return 1
+    fi
+    if [[ ! -v profiles_indexes["$1"] ]]; then
+        echo "Provided key '$1' was incorrect."
+        return 1
+    fi
+
+    if [ ${profiles_indexes["$1"]} -eq -1 ]; then
+        echo "No configs provided for key '$1'"
+        return 1
+    fi
+
+    return 0
+}
+
+is_profile_active() {
+    if ! is_current_profile "$1"; then
+        return 1
+    fi
+    
+    local target="$target_path/${current_profiles[$1]}"
+    if [ ! -f "$target" ]; then
+        echo "No such config in tlp.d/ with key: '$1' target: '$target'"
+        return 1
+    fi
+
+    if ! has_configs_with_key "$1"; then
+        return 1
+    fi
+    
+    #if ! cmp -s "$target" ""
+    
+    return 0
+}
+is_profile_active "mai"
+echo "Is active: $?"
