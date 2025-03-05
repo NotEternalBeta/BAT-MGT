@@ -1,7 +1,7 @@
 # Laptop Battery Power Management App for Linux via TLP
 
 ## Requirements
-- **TLP v. 1.6.1**
+- **TLP** (Recommended v.: 1.6.1)
 
 ## Usage
 
