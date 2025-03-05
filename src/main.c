@@ -34,7 +34,7 @@ int main() {
         }
         cmd_buffer[i] = '\0';
         
-        printf("\ncommand: '%s'\n", cmd_buffer);
+        //printf("\ncommand: '%s'\n\n", cmd_buffer);
         system(cmd_buffer);
     }
     

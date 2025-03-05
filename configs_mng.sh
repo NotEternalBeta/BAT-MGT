@@ -8,13 +8,6 @@ current_profiles_data="$data_path/current_profiles.txt"
 profiles_mapping_data="$data_path/profiles_mapping.txt"
 
 profiles_path="$program_path/profiles"
-main_profiles_path="$program_path/profiles/main"
-charge_threshold_profiles_path="$program_path/profiles/charge_threshold"
-
-#main_configs=$(ls "$main_profiles_path")
-#charge_threshold_configs=$(ls "$charge_threshold_profiles_path")
-#echo "Список файлов в папке основных конфигов: $main_configs"
-#echo "Список файлов в папке конфигов лимита заряда: $charge_threshold_configs"
 
 #profile_params=("file" "label" "caption")
 
@@ -30,8 +23,11 @@ init() {
     if [ ! -f "$profiles_mapping_data" ]; then
         touch "$profiles_mapping_data"
     fi
+    
+    read_profiles
+    set_indexes
 }
-init
+#init
 
 read_profiles() {
     while IFS='=' read -r key value; do
@@ -44,7 +40,7 @@ read_profiles() {
         profiles_map["$key"]="$profiles_path/$value"
     done < "$profiles_mapping_data"
 }
-read_profiles
+#read_profiles
 
 set_indexes() {
     for key in "${!profiles_map[@]}"; do
@@ -77,7 +73,7 @@ set_indexes() {
         done
     done
 }
-set_indexes
+#set_indexes
 
 print_profiles_data() {
     printf "Data from current_profiles.txt:\n"
@@ -90,7 +86,7 @@ print_profiles_data() {
     done
     printf "\n"
 }
-print_profiles_data
+#print_profiles_data
 
 print_indexes() {
     printf "Printing indexes:\n"
@@ -99,7 +95,7 @@ print_indexes() {
     done
     printf "\n"
 }
-print_indexes
+#print_indexes
 
 is_current_profile() {
     if [[ -z "$1" ]]; then
@@ -171,7 +167,7 @@ print_all_active_profiles() {
     done
     echo "----                ----"
 }
-print_all_active_profiles
+#print_all_active_profiles
 
 force_set_current_profiles() { 
     sudo rm "$target_path"/*
@@ -187,8 +183,8 @@ restart_tlp() {
     sudo tlp start
 }
 
-cycle_profile_with_key() {
-    # TO DO: read all data again
+cycle() {
+    init
     
     if ! has_configs_with_key "$1"; then
         return
@@ -215,13 +211,17 @@ cycle_profile_with_key() {
             sed -i "s/^$key=[^ ]*/$key=$new_value/" "$current_profiles_data"
             
             profiles_indexes["$1"]=$index
+            
+            echo "TLP config '$profile_name' was set with key '$1'"
+            restart_tlp
+            
             break
         fi
         
         i=$((i+1))
-    done
+    done    
 }
-#cycle_profile_with_key "main"
+#cycle "main"
 
 if [[ -n "$1" ]]; then
     "$@"
