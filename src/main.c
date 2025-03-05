@@ -8,7 +8,7 @@ int main() {
         return -1;
     }
     
-    char* script = "bash ../configs_mng.sh";
+    char* script = "bash ./configs_mng.sh";
     int exit;
     while (1) {
         if (scanf("%d", &exit) == 1 && exit == -1) break;
@@ -35,7 +35,10 @@ int main() {
         cmd_buffer[i] = '\0';
         
         //printf("\ncommand: '%s'\n\n", cmd_buffer);
-        system(cmd_buffer);
+        int result = system(cmd_buffer);
+        if (result == -1) {
+            perror("system");
+        }
     }
     
     return 0;

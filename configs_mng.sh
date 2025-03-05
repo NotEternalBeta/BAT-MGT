@@ -160,14 +160,14 @@ print_active_profile_with_key() {
     printf "key: '%s' config: '%s'\n" "$1" "$source_config"
 }
 
-print_all_active_profiles() { 
+print_active_profiles() {
     echo "---- Active configs ----"
     for key in "${!current_profiles[@]}"; do
         print_active_profile_with_key "$key"
     done
     echo "----                ----"
 }
-#print_all_active_profiles
+#print_active_profiles
 
 force_set_current_profiles() { 
     sudo rm "$target_path"/*
@@ -224,5 +224,6 @@ cycle() {
 #cycle "main"
 
 if [[ -n "$1" ]]; then
+    init
     "$@"
 fi
